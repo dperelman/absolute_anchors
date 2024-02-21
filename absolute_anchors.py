@@ -1,10 +1,8 @@
 """
-Summary Footnotes
+Absolute Anchors
 -------------
 
-Fix handling of footnote links inside article summaries.
-Option to either remove them or make them link to the article page.
-Also never show the footnotes themselves in the summary.
+Fix handling of anchor links when viewing an article not on its page.
 """
 
 from pelican import contents
@@ -20,11 +18,12 @@ def initialized(pelican):
                  orig_summary.fset, orig_summary.fdel,
                  orig_summary.__doc__)
 
-    orig_content = contents.Content.content
-    contents.Content.content = \
-        property(lambda instance: get_transformed(instance, orig_content),
-                 orig_content.fset, orig_content.fdel,
-                 orig_content.__doc__)
+    orig_update_content = contents.Content._update_content
+    contents.Content._update_content =\
+        lambda instance, content, site_url: \
+        transform(orig_update_content(instance, content, site_url),
+                  instance.url,
+                  site_url)
 
 
 def transform(value, article_url, site_url):
